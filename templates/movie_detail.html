@@ -1,0 +1,47 @@
+{% extends "base.html" %} {% block title %}{{ movie[1] }} - Shivam Booking{% endblock
+%} {% block content %}
+<div class="movie-detail-page">
+  <div class="container">
+    <div class="movie-detail-card">
+      <div class="movie-poster-large">
+        <img
+          src="{{ movie[7] or '/static/images/placeholder.jpg' }}"
+          alt="{{ movie[1] }}"
+        />
+      </div>
+      <div class="movie-detail-info">
+        <h1>{{ movie[1] }}</h1>
+        <p class="rating">★ {{ movie[4] }}/10</p>
+        <p class="genre"><strong>Genre:</strong> {{ movie[3] }}</p>
+        <p class="duration">
+          <strong>Duration:</strong> {{ movie[5] }} minutes
+        </p>
+        <p class="language"><strong>Language:</strong> {{ movie[6] }}</p>
+        <p class="description"><strong>Synopsis:</strong></p>
+        <p class="synopsis">{{ movie[2] }}</p>
+      </div>
+    </div>
+
+    <h2>Select Show & Book Tickets</h2>
+    <div class="shows-list">
+      {% for show in shows %}
+      <div class="show-card">
+        <div class="show-info">
+          <h3>{{ show.theater }}</h3>
+          <p class="show-time">📅 {{ show.show_time }}</p>
+          <p class="price">💰 ₹{{ show.price }} per seat</p>
+          <p class="available-seats">
+            Available: {{ show.available_seats }} seats
+          </p>
+        </div>
+        {% if show.available_seats > 0 %}
+        <a href="/book/{{ show.id }}" class="book-btn">Select Seats</a>
+        {% else %}
+        <button class="book-btn" disabled>House Full</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block title %}Home - shivam booking ticket{%
+endblock %} {% block content %}
+<div class="hero-section">
+  <div class="hero-content">
+    <h1>Welcome to Shivam Booking</h1>
+    <p>Book your favorite movie tickets online instantly</p>
+    <a href="/movies" class="cta-button">Browse Movies</a>
+  </div>
+</div>
+
+<section class="movies-section">
+  <div class="container">
+    <h2>Now Showing</h2>
+    <div class="movies-grid">
+      {% for movie in movies %}
+      <div class="movie-card">
+        <div class="movie-poster">
+          <img
+            src="{{ movie[7] or '/static/images/placeholder.jpg' }}"
+            alt="{{ movie[1] }}"
+          />
+        </div>
+        <div class="movie-info">
+          <h3>{{ movie[1] }}</h3>
+          <p class="genre">{{ movie[3] }}</p>
+          <p class="rating">★ {{ movie[4] }}/10</p>
+          <p class="duration">⏱ {{ movie[5] }} mins</p>
+          <p class="language">🎤 {{ movie[6] }}</p>
+          <a href="/movie/{{ movie[0] }}" class="book-btn">Book Now</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="container">
+    <h2>Why Choose Shivam Booking?</h2>
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">⚡</span>
+        <h3>Fast Booking</h3>
+        <p>Book your tickets in seconds</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">💳</span>
+        <h3>Secure Payment</h3>
+        <p>Safe and encrypted transactions</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🎫</span>
+        <h3>Instant Confirmation</h3>
+        <p>Get your tickets instantly</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">📱</span>
+        <h3>Mobile Friendly</h3>
+        <p>Book on any device</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
