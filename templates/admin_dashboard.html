@@ -154,13 +154,16 @@
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        display: flex;
+        align-items: center;
       }
 
       .movie-poster {
-        width: 100%;
-        height: 200px;
+        width: 100px;
+        height: 150px;
         background: #ddd;
         overflow: hidden;
+        flex-shrink: 0;
       }
 
       .movie-poster img {
@@ -265,6 +268,52 @@
           align-items: flex-start;
         }
       }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 10px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .modal-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -274,6 +323,23 @@
     </div>
 
     <div class="admin-container">
+      <!-- Statistics Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Total Bookings Card -->
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #667eea;">
+          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">Total Tickets</h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ total_bookings }}</p>
+        </div>
+
+        <!-- Theater Stats -->
+        {% for theater in theater_bookings %}
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #48bb78;">
+          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">{{ theater[0] }}</h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ theater[1] }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('movies')">
           📽️ Manage Movies
@@ -382,9 +448,22 @@
           <form id="addShowForm">
             <div class="form-group">
               <label for="movie_id">Select Movie</label>
-              <select id="movie_id" required>
-                <option value="">-- Select a Movie --</option>
-              </select>
+              <div style="display: flex; align-items: center; gap: 1rem">
+                <select id="movie_id" required style="flex: 1">
+                  <option value="">-- Select a Movie --</option>
+                </select>
+                <img
+                  id="moviePosterPreview"
+                  src=""
+                  alt="Movie Poster Preview"
+                  style="
+                    height: 100px;
+                    border-radius: 5px;
+                    display: none;
+                    object-fit: cover;
+                  "
+                />
+              </div>
             </div>
 
             <div class="form-group">
@@ -428,47 +507,57 @@
       </div>
     </div>
 
+    <!-- Shows Modal -->
+    <div id="showsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
     <script>
+      let allMoviesData = [];
+
       // Load all movies
       async function loadMovies() {
-          const response = await fetch('/admin');
-          const html = await response.text();
-          // Parse and display movies
-          const moviesData = {{ movies | tojson }};
+        const response = await fetch('/api/admin/movies');
+        const movies = await response.json();
+        allMoviesData = movies;
 
-          const grid = document.getElementById('moviesGrid');
-          grid.innerHTML = '';
+        const grid = document.getElementById('moviesGrid');
+        grid.innerHTML = '';
 
-          moviesData.forEach(movie => {
-              const card = document.createElement('div');
-              card.className = 'movie-card';
-              card.innerHTML = `
-                  <div class="movie-poster">
-                      <img src="${movie.poster || '/static/images/placeholder.jpg'}" alt="${movie.title}">
-                  </div>
-                  <div class="movie-info">
-                      <h3>${movie.title}</h3>
-                      <p><strong>Genre:</strong> ${movie.genre}</p>
-                      <p><strong>Rating:</strong> ⭐ ${movie.rating}/10</p>
-                      <p><strong>Duration:</strong> ${movie.duration} mins</p>
-                      <p><strong>Language:</strong> ${movie.language}</p>
-                      <div class="movie-actions">
-                          <button class="btn-small btn-shows" onclick="showMovieShows(${movie.id})">Shows</button>
-                          <button class="btn-small btn-delete" onclick="deleteMovie(${movie.id})">Delete</button>
-                      </div>
-                  </div>
-              `;
-              grid.appendChild(card);
-          });
+        movies.forEach(movie => {
+          const card = document.createElement('div');
+          card.className = 'movie-card';
+          card.innerHTML = `
+            <div class="movie-poster">
+                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" alt="${movie.title}">
+            </div>
+            <div class="movie-info">
+                <h3>${movie.title}</h3>
+                <p><strong>Genre:</strong> ${movie.genre}</p>
+                <p><strong>Rating:</strong> ⭐ ${movie.rating}/10</p>
+                <p><strong>Duration:</strong> ${movie.duration} mins</p>
+                <p><strong>Language:</strong> ${movie.language}</p>
+                <div class="movie-actions">
+                    <button class="btn-small btn-shows" onclick="showMovieShows(${movie.id})">Shows</button>
+                    <button class="btn-small btn-delete" onclick="deleteMovie(${movie.id})">Delete</button>
+                </div>
+            </div>
+        `;
+          grid.appendChild(card);
+        });
 
-          // Populate movie dropdown
-          const select = document.getElementById('movie_id');
-          moviesData.forEach(movie => {
-              const option = document.createElement('option');
-              option.value = movie.id;
-              option.textContent = movie.title;
-              select.appendChild(option);
-          });
+        // Populate movie dropdown
+        const select = document.getElementById('movie_id');
+        movies.forEach(movie => {
+          const option = document.createElement('option');
+          option.value = movie.id;
+          option.textContent = movie.title;
+          option.dataset.poster = movie.poster || "https://via.placeholder.com/100x150?text=No+Image";
+          select.appendChild(option);
+        });
       }
 
       function switchTab(tabName) {
@@ -573,29 +662,71 @@
 
       // Show Movie Shows
       async function showMovieShows(movieId) {
+          const movie = allMoviesData.find(m => m.id === movieId);
           const response = await fetch(`/api/admin/movie-shows/${movieId}`);
           const shows = await response.json();
 
+          const modal = document.getElementById('showsModal');
+          const modalBody = document.getElementById('modalBody');
+
+          let content = `
+            <div class="modal-header">
+                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" style="width: 80px; height: 120px; object-fit: cover; border-radius: 5px;">
+                <div>
+                    <h2>${movie.title}</h2>
+                    <p><strong>Genre:</strong> ${movie.genre}</p>
+                    <p><strong>Duration:</strong> ${movie.duration} mins</p>
+                </div>
+            </div>
+            <h3>Scheduled Shows</h3>
+          `;
+
           if (shows.length === 0) {
-              alert('No shows found for this movie');
-              return;
+              content += '<p>No shows found for this movie.</p>';
+          } else {
+              content += '<div class="shows-list" style="margin-top: 0; box-shadow: none; padding: 0;">';
+              shows.forEach(show => {
+                  content += `
+                      <div class="show-item">
+                          <div>
+                              <p><strong>${show.theater}</strong></p>
+                              <p>📅 ${new Date(show.show_time).toLocaleString()}</p>
+                              <p>💰 ₹${show.price} | 🪑 ${show.available_seats} seats available</p>
+                          </div>
+                      </div>
+                  `;
+              });
+              content += '</div>';
           }
 
-          let showsHTML = '<h4>Shows for this movie:</h4>';
-          shows.forEach(show => {
-              showsHTML += `
-                  <div class="show-item">
-                      <div>
-                          <p><strong>${show.theater}</strong></p>
-                          <p>📅 ${show.show_time}</p>
-                          <p>💰 ₹${show.price} | 🪑 ${show.available_seats} seats</p>
-                      </div>
-                  </div>
-              `;
-          });
-
-          alert(showsHTML);
+          modalBody.innerHTML = content;
+          modal.style.display = "block";
       }
+
+      function closeModal() {
+          document.getElementById('showsModal').style.display = "none";
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+          const modal = document.getElementById('showsModal');
+          if (event.target == modal) {
+              modal.style.display = "none";
+          }
+      }
+
+      document.getElementById("movie_id").addEventListener("change", (e) => {
+        const posterPreview = document.getElementById("moviePosterPreview");
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const posterUrl = selectedOption.dataset.poster;
+
+        if (posterUrl && e.target.value) {
+          posterPreview.src = posterUrl;
+          posterPreview.style.display = "block";
+        } else {
+          posterPreview.style.display = "none";
+        }
+      });
 
       // Load movies on page load
       loadMovies();
