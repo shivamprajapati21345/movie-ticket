@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Shivam Booking</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .admin-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .admin-header a {
+        color: white;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        transition: background 0.3s;
+      }
+
+      .admin-header a:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .tab-btn {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #666;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+      }
+
+      .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .form-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 1rem;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: opacity 0.3s;
+      }
+
+      .btn-primary:hover {
+        opacity: 0.9;
+      }
+
+      .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+
+      .movie-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+      }
+
+      .movie-poster {
+        width: 100px;
+        height: 150px;
+        background: #ddd;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .movie-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .movie-info {
+        padding: 1.5rem;
+      }
+
+      .movie-info h3 {
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+
+      .movie-info p {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0.3rem 0;
+      }
+
+      .movie-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .btn-small {
+        flex: 1;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+
+      .btn-shows {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-delete {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      .shows-list {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+      }
+
+      .show-item {
+        padding: 1rem;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .message {
+        padding: 1rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .message.success {
+        display: block;
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .message.error {
+        display: block;
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      @media (max-width: 768px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .movies-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-header {
+          flex-direction: column;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 10px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .modal-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-header">
+      <h1>🎬 Admin Panel - Shivam Booking</h1>
+      <a href="/admin/logout">Logout</a>
+    </div>
+
+    <div class="admin-container">
+      <!-- Statistics Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Total Bookings Card -->
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #667eea;">
+          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">Total Tickets</h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ total_bookings }}</p>
+        </div>
+
+        <!-- Theater Stats -->
+        {% for theater in theater_bookings %}
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #48bb78;">
+          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">{{ theater[0] }}</h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ theater[1] }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('movies')">
+          📽️ Manage Movies
+        </button>
+        <button class="tab-btn" onclick="switchTab('add-movie')">
+          ➕ Add Movie
+        </button>
+        <button class="tab-btn" onclick="switchTab('add-show')">
+          🎪 Add Show
+        </button>
+      </div>
+
+      <div id="message" class="message"></div>
+
+      <!-- Manage Movies Tab -->
+      <div id="movies" class="tab-content active">
+        <h2>All Movies</h2>
+        <div class="movies-grid" id="moviesGrid">
+          <!-- Movies will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Add Movie Tab -->
+      <div id="add-movie" class="tab-content">
+        <div class="form-card">
+          <h2>Add New Movie</h2>
+          <form id="addMovieForm">
+            <div class="form-group">
+              <label for="title">Movie Title</label>
+              <input
+                type="text"
+                id="title"
+                required
+                placeholder="Enter movie title"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                rows="4"
+                placeholder="Enter movie description"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="genre">Genre</label>
+                <input
+                  type="text"
+                  id="genre"
+                  required
+                  placeholder="e.g., Action, Drama"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="rating">Rating (out of 10)</label>
+                <input
+                  type="number"
+                  id="rating"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  placeholder="8.5"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="duration">Duration (minutes)</label>
+                <input type="number" id="duration" required placeholder="120" />
+              </div>
+
+              <div class="form-group">
+                <label for="language">Language</label>
+                <input
+                  type="text"
+                  id="language"
+                  required
+                  placeholder="e.g., Hindi, English"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="poster">Poster URL</label>
+              <input
+                type="url"
+                id="poster"
+                placeholder="https://example.com/poster.jpg"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Add Movie</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add Show Tab -->
+      <div id="add-show" class="tab-content">
+        <div class="form-card">
+          <h2>Add New Show</h2>
+          <form id="addShowForm">
+            <div class="form-group">
+              <label for="movie_id">Select Movie</label>
+              <div style="display: flex; align-items: center; gap: 1rem">
+                <select id="movie_id" required style="flex: 1">
+                  <option value="">-- Select a Movie --</option>
+                </select>
+                <img
+                  id="moviePosterPreview"
+                  src=""
+                  alt="Movie Poster Preview"
+                  style="
+                    height: 100px;
+                    border-radius: 5px;
+                    display: none;
+                    object-fit: cover;
+                  "
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="theater">Theater Name</label>
+              <select id="theater" required>
+                <option value="">-- Select Theater --</option>
+                <option value="PVR Cinemas">PVR Cinemas</option>
+                <option value="INOX">INOX</option>
+                <option value="Cinepolis">Cinepolis</option>
+                <option value="Carnival">Carnival</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="show_date">Date</label>
+                <input type="date" id="show_date" required />
+              </div>
+
+              <div class="form-group">
+                <label for="show_time">Time</label>
+                <input type="time" id="show_time" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="price">Price (₹)</label>
+              <input
+                type="number"
+                id="price"
+                min="0"
+                step="50"
+                required
+                placeholder="150"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Add Show</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shows Modal -->
+    <div id="showsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script>
+      let allMoviesData = [];
+
+      // Load all movies
+      async function loadMovies() {
+        const response = await fetch('/api/admin/movies');
+        const movies = await response.json();
+        allMoviesData = movies;
+
+        const grid = document.getElementById('moviesGrid');
+        grid.innerHTML = '';
+
+        movies.forEach(movie => {
+          const card = document.createElement('div');
+          card.className = 'movie-card';
+          card.innerHTML = `
+            <div class="movie-poster">
+                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" alt="${movie.title}">
+            </div>
+            <div class="movie-info">
+                <h3>${movie.title}</h3>
+                <p><strong>Genre:</strong> ${movie.genre}</p>
+                <p><strong>Rating:</strong> ⭐ ${movie.rating}/10</p>
+                <p><strong>Duration:</strong> ${movie.duration} mins</p>
+                <p><strong>Language:</strong> ${movie.language}</p>
+                <div class="movie-actions">
+                    <button class="btn-small btn-shows" onclick="showMovieShows(${movie.id})">Shows</button>
+                    <button class="btn-small btn-delete" onclick="deleteMovie(${movie.id})">Delete</button>
+                </div>
+            </div>
+        `;
+          grid.appendChild(card);
+        });
+
+        // Populate movie dropdown
+        const select = document.getElementById('movie_id');
+        movies.forEach(movie => {
+          const option = document.createElement('option');
+          option.value = movie.id;
+          option.textContent = movie.title;
+          option.dataset.poster = movie.poster || "https://via.placeholder.com/100x150?text=No+Image";
+          select.appendChild(option);
+        });
+      }
+
+      function switchTab(tabName) {
+          // Hide all tabs
+          document.querySelectorAll('.tab-content').forEach(tab => {
+              tab.classList.remove('active');
+          });
+
+          // Remove active class from all buttons
+          document.querySelectorAll('.tab-btn').forEach(btn => {
+              btn.classList.remove('active');
+          });
+
+          // Show selected tab
+          document.getElementById(tabName).classList.add('active');
+          event.target.classList.add('active');
+      }
+
+      function showMessage(message, type) {
+          const msgDiv = document.getElementById('message');
+          msgDiv.className = `message ${type}`;
+          msgDiv.textContent = message;
+          setTimeout(() => msgDiv.classList.remove('success', 'error'), 3000);
+      }
+
+      // Add Movie
+      document.getElementById('addMovieForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = {
+              title: document.getElementById('title').value,
+              description: document.getElementById('description').value,
+              genre: document.getElementById('genre').value,
+              rating: document.getElementById('rating').value,
+              duration: document.getElementById('duration').value,
+              language: document.getElementById('language').value,
+              poster: document.getElementById('poster').value
+          };
+
+          const response = await fetch('/api/admin/add-movie', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData)
+          });
+
+          const data = await response.json();
+          if (data.success) {
+              showMessage('Movie added successfully!', 'success');
+              e.target.reset();
+              setTimeout(() => location.reload(), 1500);
+          } else {
+              showMessage(data.message || 'Failed to add movie', 'error');
+          }
+      });
+
+      // Add Show
+      document.getElementById('addShowForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const date = document.getElementById('show_date').value;
+          const time = document.getElementById('show_time').value;
+          const show_time = new Date(`${date}T${time}`).toISOString();
+
+          const formData = {
+              movie_id: document.getElementById('movie_id').value,
+              theater: document.getElementById('theater').value,
+              show_time: show_time,
+              price: document.getElementById('price').value
+          };
+
+          const response = await fetch('/api/admin/add-show', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData)
+          });
+
+          const data = await response.json();
+          if (data.success) {
+              showMessage('Show added successfully!', 'success');
+              e.target.reset();
+          } else {
+              showMessage(data.message || 'Failed to add show', 'error');
+          }
+      });
+
+      // Delete Movie
+      async function deleteMovie(movieId) {
+          if (confirm('Are you sure you want to delete this movie?')) {
+              const response = await fetch(`/api/admin/delete-movie/${movieId}`, {
+                  method: 'POST'
+              });
+
+              const data = await response.json();
+              if (data.success) {
+                  showMessage('Movie deleted successfully!', 'success');
+                  setTimeout(() => location.reload(), 1500);
+              } else {
+                  showMessage(data.message || 'Failed to delete movie', 'error');
+              }
+          }
+      }
+
+      // Show Movie Shows
+      async function showMovieShows(movieId) {
+          const movie = allMoviesData.find(m => m.id === movieId);
+          const response = await fetch(`/api/admin/movie-shows/${movieId}`);
+          const shows = await response.json();
+
+          const modal = document.getElementById('showsModal');
+          const modalBody = document.getElementById('modalBody');
+
+          let content = `
+            <div class="modal-header">
+                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" style="width: 80px; height: 120px; object-fit: cover; border-radius: 5px;">
+                <div>
+                    <h2>${movie.title}</h2>
+                    <p><strong>Genre:</strong> ${movie.genre}</p>
+                    <p><strong>Duration:</strong> ${movie.duration} mins</p>
+                </div>
+            </div>
+            <h3>Scheduled Shows</h3>
+          `;
+
+          if (shows.length === 0) {
+              content += '<p>No shows found for this movie.</p>';
+          } else {
+              content += '<div class="shows-list" style="margin-top: 0; box-shadow: none; padding: 0;">';
+              shows.forEach(show => {
+                  content += `
+                      <div class="show-item">
+                          <div>
+                              <p><strong>${show.theater}</strong></p>
+                              <p>📅 ${new Date(show.show_time).toLocaleString()}</p>
+                              <p>💰 ₹${show.price} | 🪑 ${show.available_seats} seats available</p>
+                          </div>
+                      </div>
+                  `;
+              });
+              content += '</div>';
+          }
+
+          modalBody.innerHTML = content;
+          modal.style.display = "block";
+      }
+
+      function closeModal() {
+          document.getElementById('showsModal').style.display = "none";
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+          const modal = document.getElementById('showsModal');
+          if (event.target == modal) {
+              modal.style.display = "none";
+          }
+      }
+
+      document.getElementById("movie_id").addEventListener("change", (e) => {
+        const posterPreview = document.getElementById("moviePosterPreview");
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const posterUrl = selectedOption.dataset.poster;
+
+        if (posterUrl && e.target.value) {
+          posterPreview.src = posterUrl;
+          posterPreview.style.display = "block";
+        } else {
+          posterPreview.style.display = "none";
+        }
+      });
+
+      // Load movies on page load
+      loadMovies();
+    </script>
+  </body>
+</html>
