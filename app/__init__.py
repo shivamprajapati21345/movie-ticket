@@ -17,7 +17,8 @@ def create_app():
     app.jinja_env.filters['format_datetime'] = format_datetime_filter
     
     # Register blueprints
-    from app.routes import auth_bp, main_bp, movie_bp, booking_bp, admin_bp
+    from app.routes import auth_bp, main_bp, movie_bp, booking_bp
+    from app.admin_routes import admin_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(movie_bp)

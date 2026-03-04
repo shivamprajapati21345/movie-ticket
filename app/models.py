@@ -440,3 +440,123 @@ class Booking:
             return []
         finally:
             conn.close()
+
+    @staticmethod
+    def get_bookings_by_date():
+        """Get total bookings count per date."""
+        conn = sqlite3.connect(DATABASE, timeout=30)
+        try:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT DATE(booking_date), COUNT(id)
+                FROM bookings
+                WHERE status = 'confirmed'
+                GROUP BY DATE(booking_date)
+                ORDER BY DATE(booking_date) DESC
+            ''')
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Error counting bookings by date: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_bookings_by_date_and_theater():
+        """Get total bookings count per date and per theater."""
+        conn = sqlite3.connect(DATABASE, timeout=30)
+        try:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT 
+                    DATE(b.booking_date) as booking_day, 
+                    s.theater_name, 
+                    COUNT(b.id) as ticket_count
+                FROM bookings b
+                JOIN shows s ON b.show_id = s.id
+                WHERE b.status = 'confirmed'
+                GROUP BY booking_day, s.theater_name
+                ORDER BY booking_day DESC, s.theater_name ASC
+            ''')
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Error counting bookings by date and theater: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_bookings_by_movie():
+        """Get total bookings count per movie."""
+        conn = sqlite3.connect(DATABASE, timeout=30)
+        try:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT 
+                    m.title, 
+                    m.poster_url,
+                    COUNT(b.id) as ticket_count
+                FROM bookings b
+                JOIN shows s ON b.show_id = s.id
+                JOIN movies m ON s.movie_id = m.id
+                WHERE b.status = 'confirmed'
+                GROUP BY m.id, m.title, m.poster_url
+                ORDER BY ticket_count DESC
+            ''')
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Error counting bookings by movie: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_bookings_by_date_and_movie():
+        """Get total bookings count per date and per movie."""
+        conn = sqlite3.connect(DATABASE, timeout=30)
+        try:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT 
+                    DATE(b.booking_date) as booking_day, 
+                    m.title, 
+                    COUNT(b.id) as ticket_count
+                FROM bookings b
+                JOIN shows s ON b.show_id = s.id
+                JOIN movies m ON s.movie_id = m.id
+                WHERE b.status = 'confirmed'
+                GROUP BY booking_day, m.title
+                ORDER BY booking_day DESC, ticket_count DESC
+            ''')
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Error counting bookings by date and movie: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_bookings_by_theater_and_movie():
+        """Get total bookings count per theater and per movie."""
+        conn = sqlite3.connect(DATABASE, timeout=30)
+        try:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT 
+                    s.theater_name, 
+                    m.title, 
+                    DATE(b.booking_date) as booking_day,
+                    COUNT(b.id) as ticket_count
+                FROM bookings b
+                JOIN shows s ON b.show_id = s.id
+                JOIN movies m ON s.movie_id = m.id
+                WHERE b.status = 'confirmed'
+                GROUP BY s.theater_name, m.title, booking_day
+                ORDER BY s.theater_name ASC, m.title ASC, booking_day DESC
+            ''')
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Error counting bookings by theater and movie: {e}")
+            return []
+        finally:
+            conn.close()

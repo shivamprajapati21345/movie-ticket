@@ -324,18 +324,63 @@
 
     <div class="admin-container">
       <!-- Statistics Section -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 2rem;
+        "
+      >
         <!-- Total Bookings Card -->
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #667eea;">
-          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">Total Tickets</h3>
-          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ total_bookings }}</p>
+        <div
+          style="
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+          "
+        >
+          <h3
+            style="
+              margin: 0 0 0.5rem 0;
+              color: #666;
+              font-size: 0.9rem;
+              text-transform: uppercase;
+            "
+          >
+            Total Tickets
+          </h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333">
+            {{ total_bookings }}
+          </p>
         </div>
 
         <!-- Theater Stats -->
         {% for theater in theater_bookings %}
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #48bb78;">
-          <h3 style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem; text-transform: uppercase;">{{ theater[0] }}</h3>
-          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333;">{{ theater[1] }}</p>
+        <div
+          style="
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #48bb78;
+          "
+        >
+          <h3
+            style="
+              margin: 0 0 0.5rem 0;
+              color: #666;
+              font-size: 0.9rem;
+              text-transform: uppercase;
+            "
+          >
+            {{ theater[0] }}
+          </h3>
+          <p style="margin: 0; font-size: 2rem; font-weight: bold; color: #333">
+            {{ theater[1] }}
+          </p>
         </div>
         {% endfor %}
       </div>
@@ -349,6 +394,15 @@
         </button>
         <button class="tab-btn" onclick="switchTab('add-show')">
           🎪 Add Show
+        </button>
+        <button class="tab-btn" onclick="switchTab('daily-stats')">
+          📅 Daily Stats
+        </button>
+        <button class="tab-btn" onclick="switchTab('movie-stats')">
+          📊 Movie Stats
+        </button>
+        <button class="tab-btn" onclick="switchTab('theater-breakdown')">
+          🏢 Theater Breakdown
         </button>
       </div>
 
@@ -428,11 +482,37 @@
             </div>
 
             <div class="form-group">
-              <label for="poster">Poster URL</label>
+              <label for="poster_file">Movie Poster</label>
+              <!-- Preview Image -->
+              <img
+                id="addMoviePosterPreview"
+                src=""
+                style="
+                  display: none;
+                  width: 120px;
+                  height: 180px;
+                  object-fit: cover;
+                  border-radius: 5px;
+                  margin-bottom: 10px;
+                  border: 1px solid #ddd;
+                  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                "
+                alt="Poster Preview"
+              />
+
+              <input
+                type="file"
+                id="poster_file"
+                accept="image/*"
+                style="margin-bottom: 10px"
+                onchange="previewMoviePoster(this)"
+              />
+              <p style="text-align: center; margin: 5px 0">OR</p>
               <input
                 type="url"
                 id="poster"
-                placeholder="https://example.com/poster.jpg"
+                placeholder="Paste Image URL (Optional)"
+                oninput="previewMoviePosterUrl(this)"
               />
             </div>
 
@@ -455,6 +535,10 @@
                 <img
                   id="moviePosterPreview"
                   src=""
+                  onerror="
+                    this.onerror = null;
+                    this.src = 'https://placehold.co/300x450?text=No+Image';
+                  "
                   alt="Movie Poster Preview"
                   style="
                     height: 100px;
@@ -505,6 +589,182 @@
           </form>
         </div>
       </div>
+
+      <!-- Daily Stats Tab -->
+      <div id="daily-stats" class="tab-content">
+        <div class="form-card">
+          <h2>Bookings by Date</h2>
+          <div
+            class="shows-list"
+            style="
+              margin-top: 0;
+              box-shadow: none;
+              padding: 0;
+              max-height: 400px;
+              overflow-y: auto;
+            "
+          >
+            {% for date, stats in daily_stats.items() %}
+            <div class="show-item" style="display: block; padding: 1.5rem">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 1rem;
+                "
+              >
+                <p style="margin: 0"><strong>📅 {{ date }}</strong></p>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    color: #667eea;
+                  "
+                >
+                  {{ stats.total }} total tickets
+                </p>
+              </div>
+
+              <div style="display: flex; gap: 2rem; flex-wrap: wrap">
+                <!-- Theater Stats -->
+                <div
+                  style="
+                    flex: 1;
+                    min-width: 250px;
+                    padding-left: 1rem;
+                    border-left: 3px solid #48bb78;
+                  "
+                >
+                  <h4
+                    style="
+                      margin-bottom: 0.5rem;
+                      color: #48bb78;
+                      font-size: 0.9rem;
+                      text-transform: uppercase;
+                    "
+                  >
+                    By Theater
+                  </h4>
+                  {% for theater in stats.theaters %}
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 0.9rem;
+                      color: #555;
+                      padding: 0.2rem 0;
+                      border-bottom: 1px dashed #eee;
+                    "
+                  >
+                    <span>{{ theater.name }}</span>
+                    <strong>{{ theater.count }}</strong>
+                  </div>
+                  {% endfor %}
+                </div>
+
+                <!-- Movie Stats -->
+                <div
+                  style="
+                    flex: 1;
+                    min-width: 250px;
+                    padding-left: 1rem;
+                    border-left: 3px solid #667eea;
+                  "
+                >
+                  <h4
+                    style="
+                      margin-bottom: 0.5rem;
+                      color: #667eea;
+                      font-size: 0.9rem;
+                      text-transform: uppercase;
+                    "
+                  >
+                    By Movie
+                  </h4>
+                  {% for movie in stats.movies %}
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 0.9rem;
+                      color: #555;
+                      padding: 0.2rem 0;
+                      border-bottom: 1px dashed #eee;
+                    "
+                  >
+                    <span>{{ movie.title }}</span>
+                    <strong>{{ movie.count }}</strong>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <p>No bookings found.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Movie Stats Tab -->
+      <div id="movie-stats" class="tab-content">
+        <div class="form-card">
+          <h2>Bookings by Movie</h2>
+          <div class="movies-grid" style="margin-top: 1rem">
+            {% for title, poster, count in movie_wise_bookings %}
+            <div class="movie-card" style="flex-direction: column; text-align: center;">
+              <div class="movie-poster" style="width: 100%; height: 250px;">
+                 <img src="{{ poster }}" alt="{{ title }}" onerror="this.onerror=null;this.src='https://placehold.co/300x450?text=image.jpeg';">
+              </div>
+              <div class="movie-info" style="padding: 1rem;">
+                 <h3 style="font-size: 1.1rem;">{{ title }}</h3>
+                 <p style="font-size: 1.5rem; font-weight: bold; color: #667eea; margin-top: 0.5rem;">{{ count }} <span style="font-size: 1rem; color: #666; font-weight: normal;">Tickets</span></p>
+              </div>
+            </div>
+            {% else %}
+            <p>No bookings found.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Theater Breakdown Tab -->
+      <div id="theater-breakdown" class="tab-content">
+        <div class="form-card">
+          <h2>Bookings by Theater & Movie</h2>
+          <div class="shows-list" style="margin-top: 0; box-shadow: none; padding: 0;">
+            {% for theater, movies in theater_movie_stats.items() %}
+            <div class="show-item" style="display: block; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: #2d3748; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">
+                    {{ theater }}
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                    {% for movie_title, data in movies.items() %}
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px; border-left: 4px solid #667eea;">
+                        <p style="margin: 0; font-weight: bold; color: #4a5568; font-size: 1.1rem;">{{ movie_title }}</p>
+                        <p style="margin: 0.5rem 0; font-size: 1.2rem; font-weight: bold; color: #2d3748;">
+                            {{ data.total }} <span style="font-size: 0.9rem; font-weight: normal; color: #718096;">total tickets</span>
+                        </p>
+                        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #cbd5e0;">
+                            {% for date_info in data.dates %}
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; margin-bottom: 2px;">
+                                <span>{{ date_info.date }}</span>
+                                <strong>{{ date_info.count }}</strong>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <p>No bookings found.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Shows Modal -->
@@ -520,19 +780,19 @@
 
       // Load all movies
       async function loadMovies() {
-        const response = await fetch('/api/admin/movies');
+        const response = await fetch("/api/admin/movies");
         const movies = await response.json();
         allMoviesData = movies;
 
-        const grid = document.getElementById('moviesGrid');
-        grid.innerHTML = '';
+        const grid = document.getElementById("moviesGrid");
+        grid.innerHTML = "";
 
-        movies.forEach(movie => {
-          const card = document.createElement('div');
-          card.className = 'movie-card';
+        movies.forEach((movie) => {
+          const card = document.createElement("div");
+          card.className = "movie-card";
           card.innerHTML = `
             <div class="movie-poster">
-                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" alt="${movie.title}">
+                <img src="${movie.poster || "https://placehold.co/300x450?text=No+Image"}" alt="${movie.title}" onerror="this.onerror=null;this.src='https://placehold.co/300x450?text=No+Image';">
             </div>
             <div class="movie-info">
                 <h3>${movie.title}</h3>
@@ -550,128 +810,150 @@
         });
 
         // Populate movie dropdown
-        const select = document.getElementById('movie_id');
-        movies.forEach(movie => {
-          const option = document.createElement('option');
+        const select = document.getElementById("movie_id");
+        select.innerHTML = '<option value="">-- Select a Movie --</option>';
+        movies.forEach((movie) => {
+          const option = document.createElement("option");
           option.value = movie.id;
           option.textContent = movie.title;
-          option.dataset.poster = movie.poster || "https://via.placeholder.com/100x150?text=No+Image";
+          option.dataset.poster =
+            movie.poster || "https://placehold.co/300x450?text=No+Image";
           select.appendChild(option);
         });
       }
 
       function switchTab(tabName) {
-          // Hide all tabs
-          document.querySelectorAll('.tab-content').forEach(tab => {
-              tab.classList.remove('active');
-          });
+        // Hide all tabs
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
 
-          // Remove active class from all buttons
-          document.querySelectorAll('.tab-btn').forEach(btn => {
-              btn.classList.remove('active');
-          });
+        // Remove active class from all buttons
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
 
-          // Show selected tab
-          document.getElementById(tabName).classList.add('active');
-          event.target.classList.add('active');
+        // Show selected tab
+        document.getElementById(tabName).classList.add("active");
+        event.target.classList.add("active");
       }
 
       function showMessage(message, type) {
-          const msgDiv = document.getElementById('message');
-          msgDiv.className = `message ${type}`;
-          msgDiv.textContent = message;
-          setTimeout(() => msgDiv.classList.remove('success', 'error'), 3000);
+        const msgDiv = document.getElementById("message");
+        msgDiv.className = `message ${type}`;
+        msgDiv.textContent = message;
+        setTimeout(() => msgDiv.classList.remove("success", "error"), 3000);
       }
 
       // Add Movie
-      document.getElementById('addMovieForm').addEventListener('submit', async (e) => {
+      document
+        .getElementById("addMovieForm")
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
 
-          const formData = {
-              title: document.getElementById('title').value,
-              description: document.getElementById('description').value,
-              genre: document.getElementById('genre').value,
-              rating: document.getElementById('rating').value,
-              duration: document.getElementById('duration').value,
-              language: document.getElementById('language').value,
-              poster: document.getElementById('poster').value
-          };
+          const formData = new FormData();
+          formData.append("title", document.getElementById("title").value);
+          formData.append(
+            "description",
+            document.getElementById("description").value,
+          );
+          formData.append("genre", document.getElementById("genre").value);
+          formData.append("rating", document.getElementById("rating").value);
+          formData.append(
+            "duration",
+            document.getElementById("duration").value,
+          );
+          formData.append(
+            "language",
+            document.getElementById("language").value,
+          );
+          formData.append(
+            "poster_url",
+            document.getElementById("poster").value,
+          );
+          formData.append(
+            "poster_file",
+            document.getElementById("poster_file").files[0],
+          );
 
-          const response = await fetch('/api/admin/add-movie', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(formData)
+          const response = await fetch("/api/admin/add-movie", {
+            method: "POST",
+            body: formData, // Send as FormData for file upload
           });
 
           const data = await response.json();
           if (data.success) {
-              showMessage('Movie added successfully!', 'success');
-              e.target.reset();
-              setTimeout(() => location.reload(), 1500);
+            showMessage("Movie added successfully!", "success");
+            e.target.reset();
+            document.getElementById("addMoviePosterPreview").style.display =
+              "none";
+            setTimeout(() => location.reload(), 1500);
           } else {
-              showMessage(data.message || 'Failed to add movie', 'error');
+            showMessage(data.message || "Failed to add movie", "error");
           }
-      });
+        });
 
       // Add Show
-      document.getElementById('addShowForm').addEventListener('submit', async (e) => {
+      document
+        .getElementById("addShowForm")
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
 
-          const date = document.getElementById('show_date').value;
-          const time = document.getElementById('show_time').value;
+          const date = document.getElementById("show_date").value;
+          const time = document.getElementById("show_time").value;
           const show_time = new Date(`${date}T${time}`).toISOString();
 
           const formData = {
-              movie_id: document.getElementById('movie_id').value,
-              theater: document.getElementById('theater').value,
-              show_time: show_time,
-              price: document.getElementById('price').value
+            movie_id: document.getElementById("movie_id").value,
+            theater: document.getElementById("theater").value,
+            show_time: show_time,
+            price: document.getElementById("price").value,
           };
 
-          const response = await fetch('/api/admin/add-show', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(formData)
+          const response = await fetch("/api/admin/add-show", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
           });
 
           const data = await response.json();
           if (data.success) {
-              showMessage('Show added successfully!', 'success');
-              e.target.reset();
+            showMessage("Show added successfully!", "success");
+            e.target.reset();
           } else {
-              showMessage(data.message || 'Failed to add show', 'error');
+            showMessage(data.message || "Failed to add show", "error");
           }
-      });
+        });
 
       // Delete Movie
       async function deleteMovie(movieId) {
-          if (confirm('Are you sure you want to delete this movie?')) {
-              const response = await fetch(`/api/admin/delete-movie/${movieId}`, {
-                  method: 'POST'
-              });
+        if (confirm("Are you sure you want to delete this movie?")) {
+          const response = await fetch(`/api/admin/delete-movie/${movieId}`, {
+            method: "POST",
+          });
 
-              const data = await response.json();
-              if (data.success) {
-                  showMessage('Movie deleted successfully!', 'success');
-                  setTimeout(() => location.reload(), 1500);
-              } else {
-                  showMessage(data.message || 'Failed to delete movie', 'error');
-              }
+          const data = await response.json();
+          if (data.success) {
+            showMessage("Movie deleted successfully!", "success");
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            showMessage(data.message || "Failed to delete movie", "error");
           }
+        }
       }
 
       // Show Movie Shows
       async function showMovieShows(movieId) {
-          const movie = allMoviesData.find(m => m.id === movieId);
-          const response = await fetch(`/api/admin/movie-shows/${movieId}`);
-          const shows = await response.json();
+        const movie = allMoviesData.find((m) => m.id === movieId);
+        const response = await fetch(`/api/admin/movie-shows/${movieId}`);
+        const shows = await response.json();
 
-          const modal = document.getElementById('showsModal');
-          const modalBody = document.getElementById('modalBody');
+        const modal = document.getElementById("showsModal");
+        const modalBody = document.getElementById("modalBody");
 
-          let content = `
+        let content = `
             <div class="modal-header">
-                <img src="${movie.poster || 'https://placehold.co/300x450?text=No+Image'}" style="width: 80px; height: 120px; object-fit: cover; border-radius: 5px;">
+                <img src="${movie.poster || "https://placehold.co/300x450?text=No+Image"}" onerror="this.onerror=null;this.src='https://placehold.co/300x450?text=No+Image';" style="width: 80px; height: 120px; object-fit: cover; border-radius: 5px;">
                 <div>
                     <h2>${movie.title}</h2>
                     <p><strong>Genre:</strong> ${movie.genre}</p>
@@ -681,12 +963,13 @@
             <h3>Scheduled Shows</h3>
           `;
 
-          if (shows.length === 0) {
-              content += '<p>No shows found for this movie.</p>';
-          } else {
-              content += '<div class="shows-list" style="margin-top: 0; box-shadow: none; padding: 0;">';
-              shows.forEach(show => {
-                  content += `
+        if (shows.length === 0) {
+          content += "<p>No shows found for this movie.</p>";
+        } else {
+          content +=
+            '<div class="shows-list" style="margin-top: 0; box-shadow: none; padding: 0;">';
+          shows.forEach((show) => {
+            content += `
                       <div class="show-item">
                           <div>
                               <p><strong>${show.theater}</strong></p>
@@ -695,29 +978,32 @@
                           </div>
                       </div>
                   `;
-              });
-              content += '</div>';
-          }
+          });
+          content += "</div>";
+        }
 
-          modalBody.innerHTML = content;
-          modal.style.display = "block";
+        modalBody.innerHTML = content;
+        modal.style.display = "block";
       }
 
       function closeModal() {
-          document.getElementById('showsModal').style.display = "none";
+        document.getElementById("showsModal").style.display = "none";
       }
 
       // Close modal when clicking outside
-      window.onclick = function(event) {
-          const modal = document.getElementById('showsModal');
-          if (event.target == modal) {
-              modal.style.display = "none";
-          }
-      }
+      window.onclick = function (event) {
+        const modal = document.getElementById("showsModal");
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
 
       document.getElementById("movie_id").addEventListener("change", (e) => {
         const posterPreview = document.getElementById("moviePosterPreview");
         const selectedOption = e.target.options[e.target.selectedIndex];
+
+        if (!selectedOption) return;
+
         const posterUrl = selectedOption.dataset.poster;
 
         if (posterUrl && e.target.value) {
@@ -725,8 +1011,36 @@
           posterPreview.style.display = "block";
         } else {
           posterPreview.style.display = "none";
+          posterPreview.src = "";
         }
       });
+
+      // Preview for Add Movie File Upload
+      function previewMoviePoster(input) {
+        const preview = document.getElementById("addMoviePosterPreview");
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      // Preview for Add Movie URL
+      function previewMoviePosterUrl(input) {
+        const preview = document.getElementById("addMoviePosterPreview");
+        const fileInput = document.getElementById("poster_file");
+        if (!fileInput.files || !fileInput.files[0]) {
+          if (input.value) {
+            preview.src = input.value;
+            preview.style.display = "block";
+          } else {
+            preview.style.display = "none";
+          }
+        }
+      }
 
       // Load movies on page load
       loadMovies();
