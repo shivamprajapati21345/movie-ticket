@@ -82,6 +82,7 @@ def index():
         return redirect(url_for('auth.login'))
 
     movies = Movie.get_all_movies()
+    print(movies)
     return render_template('index.html', movies=movies, is_logged_in=True, username=session.get('username'))
 
 @main_bp.route('/about')
@@ -114,7 +115,7 @@ def movie_detail(movie_id):
     shows_by_date = {}
     for show in shows:
         try:
-            dt = datetime.fromisoformat(show[3])
+            dt = datetime.fromisoformat(show[3].replace('Z', '+00:00'))
             date_key = dt.strftime('%Y-%m-%d')
             if date_key not in shows_by_date:
                 shows_by_date[date_key] = []
@@ -151,7 +152,7 @@ def book_seats(show_id):
     seats = Show.get_all_seats(show_id)
     
     # Format date and time for display
-    show_dt = datetime.fromisoformat(show[3])
+    show_dt = datetime.fromisoformat(show[3].replace('Z', '+00:00'))
     show_date = show_dt.strftime('%a, %d %b %Y')
     show_time = show_dt.strftime('%I:%M %p')
     
@@ -253,7 +254,7 @@ def ticket_view(booking_id):
             return "You are not authorized to view this ticket.", 403
         
         # Calculate Shift for Ticket
-        show_dt = datetime.fromisoformat(booking[6])
+        show_dt = datetime.fromisoformat(booking[6].replace('Z', '+00:00'))
         show_time_formatted = show_dt.strftime('%I:%M %p')
         show_date_formatted = show_dt.strftime('%A, %d %b %Y')
         hour = show_dt.hour

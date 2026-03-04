@@ -386,22 +386,22 @@
       </div>
 
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('movies')">
+        <button class="tab-btn active" onclick="switchTab(event, 'movies')">
           📽️ Manage Movies
         </button>
-        <button class="tab-btn" onclick="switchTab('add-movie')">
+        <button class="tab-btn" onclick="switchTab(event, 'add-movie')">
           ➕ Add Movie
         </button>
-        <button class="tab-btn" onclick="switchTab('add-show')">
+        <button class="tab-btn" onclick="switchTab(event, 'add-show')">
           🎪 Add Show
         </button>
-        <button class="tab-btn" onclick="switchTab('daily-stats')">
+        <button class="tab-btn" onclick="switchTab(event, 'daily-stats')">
           📅 Daily Stats
         </button>
-        <button class="tab-btn" onclick="switchTab('movie-stats')">
+        <button class="tab-btn" onclick="switchTab(event, 'movie-stats')">
           📊 Movie Stats
         </button>
-        <button class="tab-btn" onclick="switchTab('theater-breakdown')">
+        <button class="tab-btn" onclick="switchTab(event, 'theater-breakdown')">
           🏢 Theater Breakdown
         </button>
       </div>
@@ -551,14 +551,13 @@
             </div>
 
             <div class="form-group">
-              <label for="theater">Theater Name</label>
-              <select id="theater" required>
-                <option value="">-- Select Theater --</option>
-                <option value="PVR Cinemas">PVR Cinemas</option>
-                <option value="INOX">INOX</option>
-                <option value="Cinepolis">Cinepolis</option>
-                <option value="Carnival">Carnival</option>
-              </select>
+              <label>Select Theaters</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                <label style="font-weight: normal; margin: 0; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="theater" value="PVR Cinemas"> PVR Cinemas</label>
+                <label style="font-weight: normal; margin: 0; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="theater" value="INOX"> INOX</label>
+                <label style="font-weight: normal; margin: 0; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="theater" value="Cinepolis"> Cinepolis</label>
+                <label style="font-weight: normal; margin: 0; display: flex; align-items: center; gap: 5px;"><input type="checkbox" name="theater" value="Carnival"> Carnival</label>
+              </div>
             </div>
 
             <div class="form-row">
@@ -778,6 +777,23 @@
     <script>
       let allMoviesData = [];
 
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie("csrftoken");
+
       // Load all movies
       async function loadMovies() {
         const response = await fetch("/api/admin/movies");
@@ -822,7 +838,7 @@
         });
       }
 
-      function switchTab(tabName) {
+      function switchTab(evt, tabName) {
         // Hide all tabs
         document.querySelectorAll(".tab-content").forEach((tab) => {
           tab.classList.remove("active");
@@ -835,7 +851,7 @@
 
         // Show selected tab
         document.getElementById(tabName).classList.add("active");
-        event.target.classList.add("active");
+        evt.currentTarget.classList.add("active");
       }
 
       function showMessage(message, type) {
@@ -878,6 +894,7 @@
 
           const response = await fetch("/api/admin/add-movie", {
             method: "POST",
+            headers: { "X-CSRFToken": csrftoken },
             body: formData, // Send as FormData for file upload
           });
 
@@ -903,16 +920,25 @@
           const time = document.getElementById("show_time").value;
           const show_time = new Date(`${date}T${time}`).toISOString();
 
+          const selectedTheaters = Array.from(document.querySelectorAll('input[name="theater"]:checked')).map(cb => cb.value);
+          if (selectedTheaters.length === 0) {
+              showMessage("Please select at least one theater", "error");
+              return;
+          }
+
           const formData = {
             movie_id: document.getElementById("movie_id").value,
-            theater: document.getElementById("theater").value,
+            theater: selectedTheaters,
             show_time: show_time,
             price: document.getElementById("price").value,
           };
 
           const response = await fetch("/api/admin/add-show", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
             body: JSON.stringify(formData),
           });
 
@@ -930,6 +956,7 @@
         if (confirm("Are you sure you want to delete this movie?")) {
           const response = await fetch(`/api/admin/delete-movie/${movieId}`, {
             method: "POST",
+            headers: { "X-CSRFToken": csrftoken },
           });
 
           const data = await response.json();

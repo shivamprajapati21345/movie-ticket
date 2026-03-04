@@ -1,8 +1,8 @@
 // Main JavaScript file for Shivam Booking
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Shivam Booking website loaded successfully');
-    
+
     // Check for any messages in sessionStorage
     const message = sessionStorage.getItem('message');
     if (message) {
@@ -17,7 +17,7 @@ function showNotification(message, type = 'info') {
     notification.className = `notification ${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.remove();
     }, 3000);
@@ -115,7 +115,7 @@ function downloadTicketPDF(bookingId) {
 function cancelBooking(bookingId) {
     if (confirm('Are you sure you want to cancel this booking? You will receive a refund.')) {
         // Make API call to cancel booking
-        fetch(`/api/cancel/${bookingId}`, { method: 'POST' })
+        fetch(`/api/cancel-booking/${bookingId}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -132,7 +132,7 @@ function cancelBooking(bookingId) {
 function initTooltips() {
     const tooltips = document.querySelectorAll('[data-tooltip]');
     tooltips.forEach(element => {
-        element.addEventListener('mouseenter', function() {
+        element.addEventListener('mouseenter', function () {
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.textContent = this.getAttribute('data-tooltip');

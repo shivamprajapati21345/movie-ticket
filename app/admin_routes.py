@@ -169,20 +169,30 @@ def add_show():
         movie_id = int(data.get('movie_id'))
         price = float(data.get('price'))
         show_time = data.get('show_time')
-        theater = data.get('theater')
+        theaters = data.get('theater')
 
-        if not all([movie_id, price, show_time, theater]):
+        if isinstance(theaters, str):
+            theaters = [theaters]
+
+        if not all([movie_id, price, show_time, theaters]) or not isinstance(theaters, list) or len(theaters) == 0:
              return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
 
     except (ValueError, TypeError):
         return jsonify({'success': False, 'message': 'Invalid data format for movie_id or price.'}), 400
 
-    show_id = Show.add_show(movie_id, theater, show_time, price)
+    success_count = 0
+    first_show_id = None
+    for theater in theaters:
+        show_id = Show.add_show(movie_id, theater, show_time, price)
+        if show_id:
+            success_count += 1
+            if not first_show_id:
+                first_show_id = show_id
     
-    if show_id:
-        return jsonify({'success': True, 'message': 'Show added!', 'show_id': show_id})
+    if success_count > 0:
+        return jsonify({'success': True, 'message': f'{success_count} shows added successfully!', 'show_id': first_show_id})
     else:
-        return jsonify({'success': False, 'message': 'Failed to add show'}), 400
+        return jsonify({'success': False, 'message': 'Failed to add shows'}), 400
 
 @admin_bp.route('/api/admin/movie-shows/<int:movie_id>')
 def get_movie_shows(movie_id):
